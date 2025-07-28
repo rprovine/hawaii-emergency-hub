@@ -1,0 +1,14 @@
+{
+  "name": "@hawaii-emergency/shared-types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript types for Hawaii Emergency Network Hub",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/geojson": "^7946.0.13",
+    "typescript": "^5.3.3"
+  }
+}
