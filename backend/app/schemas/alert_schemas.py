@@ -8,7 +8,7 @@ from app.models.models import AlertSeverity, AlertCategory
 class LocationFilter(BaseModel):
     latitude: float = Field(..., ge=-90, le=90)
     longitude: float = Field(..., ge=-180, le=180)
-    radius_miles: float = Field(25.0, ge=1, le=100)
+    radius_miles: float = Field(25.0, ge=0.1, le=100)
 
 class AlertFilter(BaseModel):
     severity: Optional[AlertSeverity] = None
@@ -29,7 +29,7 @@ class AlertBase(BaseModel):
     location_name: Optional[str] = None
     latitude: Optional[float] = Field(None, ge=-90, le=90)
     longitude: Optional[float] = Field(None, ge=-180, le=180)
-    radius_miles: Optional[float] = Field(None, ge=1, le=300)
+    radius_miles: Optional[float] = Field(None, ge=0.1, le=300)
     affected_counties: List[str] = []
     effective_time: datetime
     expires_time: Optional[datetime] = None

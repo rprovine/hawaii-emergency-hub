@@ -14,9 +14,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-from app.api import alerts, auth, analytics, admin, notifications, zones
+from app.api import alerts, auth, analytics, admin, notifications, zones, translations, family, history, ocean, crime
+from app.routers import payments
 from app.core.config import settings
 from app.core.websocket import connection_manager
+from app.core.rate_limit import RateLimitMiddleware
 from app.models import models
 from app.services.alert_processor import AlertProcessor
 
@@ -53,11 +55,15 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],  # Allow all origins for development
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
+
+# Add rate limiting middleware
+app.add_middleware(RateLimitMiddleware)
 
 # Include routers
 app.include_router(alerts.router, prefix="/api/v1/alerts", tags=["alerts"])
@@ -66,6 +72,12 @@ app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["analytic
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
 app.include_router(notifications.router, prefix="/api/v1/notifications", tags=["notifications"])
 app.include_router(zones.router, prefix="/api/v1/zones", tags=["zones"])
+app.include_router(payments.router, tags=["payments"])
+app.include_router(translations.router, prefix="/api/v1/translations", tags=["translations"])
+app.include_router(family.router, prefix="/api/v1/family", tags=["family"])
+app.include_router(history.router, prefix="/api/v1/history", tags=["history"])
+app.include_router(ocean.router, prefix="/api/v1/ocean", tags=["ocean"])
+app.include_router(crime.router, prefix="/api/v1/crime", tags=["crime"])
 
 @app.get("/")
 async def root():

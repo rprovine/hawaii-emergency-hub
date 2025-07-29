@@ -68,6 +68,9 @@ class AlertProcessor:
             from app.services.external_apis.nws_api import nws_client
             from app.services.external_apis.usgs_earthquake_api import usgs_earthquake_client
             from app.services.external_apis.volcano_monitor import volcano_monitor
+            from app.services.ocean_safety_service import OceanSafetyService
+            from app.services.crime_data_service import CrimeDataService
+            from app.core.database import SessionLocal
             
             # Run all syncs concurrently
             tasks = [
@@ -75,6 +78,30 @@ class AlertProcessor:
                 usgs_earthquake_client.sync_earthquakes(),
                 volcano_monitor.sync_volcano_alerts()
             ]
+            
+            # Add ocean safety monitoring
+            try:
+                ocean_conditions = await OceanSafetyService.fetch_ocean_conditions()
+                if ocean_conditions:
+                    db = SessionLocal()
+                    try:
+                        OceanSafetyService.create_ocean_safety_alerts(db, ocean_conditions)
+                    finally:
+                        db.close()
+            except Exception as e:
+                logger.error(f"Error monitoring ocean conditions: {e}")
+            
+            # Add crime data monitoring
+            try:
+                crime_incidents = await CrimeDataService.fetch_crime_data()
+                if crime_incidents:
+                    db = SessionLocal()
+                    try:
+                        CrimeDataService.create_crime_alerts(db, crime_incidents)
+                    finally:
+                        db.close()
+            except Exception as e:
+                logger.error(f"Error monitoring crime data: {e}")
             
             results = await asyncio.gather(*tasks, return_exceptions=True)
             

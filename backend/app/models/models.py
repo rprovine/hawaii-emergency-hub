@@ -24,6 +24,8 @@ class AlertCategory(str, enum.Enum):
     HURRICANE = "hurricane"
     CIVIL = "civil"
     HEALTH = "health"
+    SECURITY = "security"
+    MARINE = "marine"
     OTHER = "other"
 
 class UserRole(str, enum.Enum):
@@ -152,6 +154,8 @@ class User(Base):
     subscription = relationship("Subscription", back_populates="user", uselist=False)
     alert_zones = relationship("AlertZone", back_populates="user")
     notification_channels = relationship("NotificationChannel", back_populates="user")
+    owned_family_groups = relationship("FamilyGroup", back_populates="owner")
+    family_memberships = relationship("FamilyMember", back_populates="user")
 
 class Notification(Base):
     __tablename__ = "notifications"
@@ -372,3 +376,66 @@ class ApiUsage(Base):
     
     # Timestamp
     requested_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class FamilyGroup(Base):
+    __tablename__ = "family_groups"
+    
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String, nullable=False)
+    owner_id = Column(String, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    owner = relationship("User", back_populates="owned_family_groups")
+    members = relationship("FamilyMember", back_populates="family_group", cascade="all, delete-orphan")
+    check_ins = relationship("FamilyCheckIn", back_populates="family_group", cascade="all, delete-orphan")
+
+
+class FamilyMember(Base):
+    __tablename__ = "family_members"
+    
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    family_group_id = Column(String, ForeignKey("family_groups.id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.id"), nullable=True)  # Null if member not registered
+    email = Column(String, nullable=False)  # For inviting non-registered members
+    name = Column(String, nullable=False)
+    role = Column(String, default="member")  # owner, admin, member
+    status = Column(String, default="pending")  # pending, active, removed
+    phone = Column(String, nullable=True)
+    emergency_contact = Column(Boolean, default=False)
+    joined_at = Column(DateTime(timezone=True), nullable=True)
+    invited_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    
+    # Location tracking
+    last_location_lat = Column(Float, nullable=True)
+    last_location_lng = Column(Float, nullable=True)
+    last_location_update = Column(DateTime(timezone=True), nullable=True)
+    location_sharing_enabled = Column(Boolean, default=False)
+    
+    # Relationships
+    family_group = relationship("FamilyGroup", back_populates="members")
+    user = relationship("User", back_populates="family_memberships")
+    check_ins = relationship("FamilyCheckIn", back_populates="member")
+
+
+class FamilyCheckIn(Base):
+    __tablename__ = "family_check_ins"
+    
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    family_group_id = Column(String, ForeignKey("family_groups.id"), nullable=False)
+    member_id = Column(String, ForeignKey("family_members.id"), nullable=False)
+    status = Column(String, nullable=False)  # safe, needs_help, no_response
+    message = Column(Text, nullable=True)
+    location_lat = Column(Float, nullable=True)
+    location_lng = Column(Float, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    
+    # Alert reference if check-in is related to specific alert
+    alert_id = Column(String, ForeignKey("alerts.id"), nullable=True)
+    
+    # Relationships
+    family_group = relationship("FamilyGroup", back_populates="check_ins")
+    member = relationship("FamilyMember", back_populates="check_ins")
+    alert = relationship("Alert")

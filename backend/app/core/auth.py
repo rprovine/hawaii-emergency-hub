@@ -1,10 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Union, List
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.core.config import settings
 from app.core.database import get_db
 from app.models.models import User, UserRole, SubscriptionTier
@@ -58,7 +58,7 @@ async def get_current_user(
     except JWTError:
         raise credentials_exception
     
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).options(joinedload(User.subscription)).filter(User.id == user_id).first()
     if user is None:
         raise credentials_exception
     if not user.is_active:
@@ -80,16 +80,32 @@ async def get_current_user_optional(
 def require_subscription_tier(allowed_tiers: List[SubscriptionTier]):
     """Dependency to require specific subscription tiers"""
     async def subscription_checker(
-        current_user: User = Depends(get_current_user)
+        current_user: User = Depends(get_current_user),
+        db: Session = Depends(get_db)
     ) -> User:
-        if current_user.subscription_tier not in allowed_tiers:
+        # Get user's subscription tier from relationship or column
+        user_tier = None
+        if current_user.subscription and current_user.subscription.tier:
+            user_tier = current_user.subscription.tier
+        elif current_user.subscription_tier:
+            user_tier = current_user.subscription_tier
+        else:
+            user_tier = SubscriptionTier.FREE
+            
+        if user_tier not in allowed_tiers:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"This feature requires {', '.join([t.value for t in allowed_tiers])} subscription"
             )
         
         # Check if subscription is still active
-        if current_user.subscription_expires and current_user.subscription_expires < datetime.utcnow():
+        if current_user.subscription:
+            if current_user.subscription.current_period_end and current_user.subscription.current_period_end < datetime.now(timezone.utc):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Your subscription has expired"
+                )
+        elif current_user.subscription_expires and current_user.subscription_expires < datetime.utcnow():
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Your subscription has expired"

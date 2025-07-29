@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict
 
 from app.core.database import get_db
@@ -11,6 +11,7 @@ from app.models.models import User, SubscriptionTier
 from app.schemas.auth_schemas import Token, UserCreate, UserResponse
 from app.services.auth_service import AuthService as AuthServiceOld
 from app.services.subscription_service import SubscriptionService
+from app.core.rate_limit import check_rate_limit
 
 router = APIRouter()
 
@@ -56,10 +57,18 @@ async def login(
     user.last_active = datetime.utcnow()
     db.commit()
     
+    # Get subscription tier from relationship or column
+    if user.subscription and user.subscription.tier:
+        tier = user.subscription.tier.value
+    elif user.subscription_tier:
+        tier = user.subscription_tier.value
+    else:
+        tier = "free"
+    
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "subscription_tier": user.subscription_tier.value if user.subscription_tier else "free"
+        "subscription_tier": tier
     }
 
 @router.get("/me")
@@ -160,3 +169,22 @@ async def revoke_api_key(
     db.commit()
     
     return {"status": "success", "message": "API key revoked"}
+
+@router.get("/rate-limit-status")
+async def get_rate_limit_status(
+    current_user: User = Depends(get_current_user)
+):
+    """Get current rate limit status for the user"""
+    identifier = f"user:{current_user.id}"
+    tier = current_user.subscription.tier if current_user.subscription else SubscriptionTier.FREE
+    
+    status = await check_rate_limit(identifier, tier)
+    
+    return {
+        "tier": tier,
+        "limit": status["limit"],
+        "used": status.get("used", 0),
+        "remaining": status["remaining"],
+        "reset": status["reset"],
+        "reset_time": datetime.fromtimestamp(status["reset"]).isoformat() if status["reset"] else None
+    }
