@@ -5,6 +5,7 @@ from datetime import datetime
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    subscription_tier: Optional[str] = "free"
 
 class TokenData(BaseModel):
     user_id: Optional[str] = None

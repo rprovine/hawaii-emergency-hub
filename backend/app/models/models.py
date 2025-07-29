@@ -32,6 +32,20 @@ class UserRole(str, enum.Enum):
     GOVERNMENT = "government"
     EMERGENCY_MANAGER = "emergency_manager"
 
+class SubscriptionTier(str, enum.Enum):
+    FREE = "free"
+    ESSENTIAL = "essential"
+    PREMIUM = "premium"
+    BUSINESS = "business"
+    ENTERPRISE = "enterprise"
+
+class PaymentStatus(str, enum.Enum):
+    PENDING = "pending"
+    ACTIVE = "active"
+    PAST_DUE = "past_due"
+    CANCELLED = "cancelled"
+    EXPIRED = "expired"
+
 class Alert(Base):
     __tablename__ = "alerts"
     
@@ -113,10 +127,31 @@ class User(Base):
     # Device tokens for push notifications
     device_tokens = Column(JSON)  # List of FCM/APNS tokens
     
+    # Subscription information
+    subscription_tier = Column(SQLEnum(SubscriptionTier), default=SubscriptionTier.FREE)
+    subscription_expires = Column(DateTime(timezone=True))
+    stripe_customer_id = Column(String, unique=True)
+    
+    # Premium features
+    saved_locations = Column(JSON)  # List of custom locations with geofences
+    family_members = Column(JSON)  # List of family member IDs for tracking
+    api_key = Column(String, unique=True)  # For API access
+    api_calls_today = Column(Integer, default=0)
+    api_calls_reset = Column(DateTime(timezone=True))
+    
+    # Business features
+    organization_name = Column(String)
+    team_members = Column(JSON)  # List of user IDs
+    is_team_owner = Column(Boolean, default=False)
+    custom_branding = Column(JSON)  # Logo URL, colors, etc.
+    
     # Relationships
     notifications = relationship("Notification", back_populates="user")
     interactions = relationship("UserAlertInteraction", back_populates="user")
     sessions = relationship("UserSession", back_populates="user")
+    subscription = relationship("Subscription", back_populates="user", uselist=False)
+    alert_zones = relationship("AlertZone", back_populates="user")
+    notification_channels = relationship("NotificationChannel", back_populates="user")
 
 class Notification(Base):
     __tablename__ = "notifications"
@@ -194,3 +229,146 @@ class AdminAction(Base):
     
     # Timestamp
     performed_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+    
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, ForeignKey("users.id"), unique=True)
+    
+    # Subscription details
+    tier = Column(SQLEnum(SubscriptionTier), nullable=False)
+    status = Column(SQLEnum(PaymentStatus), nullable=False)
+    
+    # Pricing
+    monthly_price = Column(Float)
+    annual_price = Column(Float)
+    is_annual = Column(Boolean, default=False)
+    
+    # Stripe information
+    stripe_subscription_id = Column(String, unique=True)
+    stripe_price_id = Column(String)
+    stripe_payment_method = Column(String)
+    
+    # Billing
+    current_period_start = Column(DateTime(timezone=True))
+    current_period_end = Column(DateTime(timezone=True))
+    trial_end = Column(DateTime(timezone=True))
+    cancel_at_period_end = Column(Boolean, default=False)
+    
+    # Limits
+    max_saved_locations = Column(Integer)
+    max_family_members = Column(Integer)
+    max_api_calls_per_day = Column(Integer)
+    max_team_members = Column(Integer)
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    cancelled_at = Column(DateTime(timezone=True))
+    
+    # Relationships
+    user = relationship("User", back_populates="subscription")
+    payments = relationship("Payment", back_populates="subscription")
+
+class Payment(Base):
+    __tablename__ = "payments"
+    
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    subscription_id = Column(String, ForeignKey("subscriptions.id"))
+    
+    # Payment details
+    amount = Column(Float, nullable=False)
+    currency = Column(String, default="USD")
+    status = Column(String)  # succeeded, failed, pending, refunded
+    
+    # Stripe information
+    stripe_payment_intent_id = Column(String, unique=True)
+    stripe_invoice_id = Column(String)
+    
+    # Metadata
+    description = Column(String)
+    failure_reason = Column(String)
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    paid_at = Column(DateTime(timezone=True))
+    
+    # Relationships
+    subscription = relationship("Subscription", back_populates="payments")
+
+class AlertZone(Base):
+    __tablename__ = "alert_zones"
+    
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, ForeignKey("users.id"))
+    
+    # Zone information
+    name = Column(String, nullable=False)
+    description = Column(Text)
+    
+    # Geofence data
+    center_latitude = Column(Float)
+    center_longitude = Column(Float)
+    radius_miles = Column(Float)
+    polygon = Column(JSON)  # GeoJSON polygon for custom shapes
+    
+    # Settings
+    is_active = Column(Boolean, default=True)
+    severity_threshold = Column(SQLEnum(AlertSeverity), default=AlertSeverity.MINOR)
+    categories = Column(JSON)  # List of AlertCategory values to monitor
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    user = relationship("User", back_populates="alert_zones")
+
+class NotificationChannel(Base):
+    __tablename__ = "notification_channels"
+    
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, ForeignKey("users.id"))
+    
+    # Channel information
+    channel_type = Column(String)  # sms, email, voice, whatsapp, telegram
+    destination = Column(String)  # phone number, email, etc.
+    is_verified = Column(Boolean, default=False)
+    is_primary = Column(Boolean, default=False)
+    
+    # Settings
+    is_active = Column(Boolean, default=True)
+    severity_threshold = Column(SQLEnum(AlertSeverity))
+    categories = Column(JSON)  # List of AlertCategory values
+    
+    # Verification
+    verification_code = Column(String)
+    verification_sent_at = Column(DateTime(timezone=True))
+    verified_at = Column(DateTime(timezone=True))
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    last_used = Column(DateTime(timezone=True))
+    
+    # Relationships
+    user = relationship("User", back_populates="notification_channels")
+
+class ApiUsage(Base):
+    __tablename__ = "api_usage"
+    
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, ForeignKey("users.id"))
+    
+    # Usage tracking
+    endpoint = Column(String)
+    method = Column(String)
+    status_code = Column(Integer)
+    response_time_ms = Column(Integer)
+    
+    # Rate limiting
+    api_key_used = Column(String)
+    ip_address = Column(String)
+    
+    # Timestamp
+    requested_at = Column(DateTime(timezone=True), server_default=func.now())

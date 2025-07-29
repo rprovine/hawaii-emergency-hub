@@ -4,9 +4,17 @@ from contextlib import asynccontextmanager
 from typing import Dict, List, Set
 import asyncio
 import json
+import logging
 from datetime import datetime
 
-from app.api import alerts, auth, analytics, admin
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+from app.api import alerts, auth, analytics, admin, notifications, zones
 from app.core.config import settings
 from app.core.websocket import connection_manager
 from app.models import models
@@ -15,15 +23,16 @@ from app.services.alert_processor import AlertProcessor
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    print("Starting Hawaii Emergency Network Hub API...")
+    logger.info("Starting Hawaii Emergency Network Hub API...")
     # Initialize services
     app.state.alert_processor = AlertProcessor()
     await app.state.alert_processor.start()
+    logger.info("Alert processor started with live data sync enabled")
     
     yield
     
     # Shutdown
-    print("Shutting down...")
+    logger.info("Shutting down...")
     await app.state.alert_processor.stop()
 
 app = FastAPI(
@@ -55,6 +64,8 @@ app.include_router(alerts.router, prefix="/api/v1/alerts", tags=["alerts"])
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
 app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["analytics"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
+app.include_router(notifications.router, prefix="/api/v1/notifications", tags=["notifications"])
+app.include_router(zones.router, prefix="/api/v1/zones", tags=["zones"])
 
 @app.get("/")
 async def root():

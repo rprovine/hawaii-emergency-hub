@@ -77,6 +77,28 @@ class Settings(BaseSettings):
     
     SUPPORTED_LANGUAGES: list = ["en", "haw", "ja", "ko", "tl", "zh"]
     
+    # Stripe Payment Settings
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_PUBLISHABLE_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    
+    # Stripe Price IDs (from Stripe Dashboard)
+    STRIPE_ESSENTIAL_MONTHLY_PRICE_ID: str = ""
+    STRIPE_ESSENTIAL_ANNUAL_PRICE_ID: str = ""
+    STRIPE_PREMIUM_MONTHLY_PRICE_ID: str = ""
+    STRIPE_PREMIUM_ANNUAL_PRICE_ID: str = ""
+    STRIPE_BUSINESS_MONTHLY_PRICE_ID: str = ""
+    STRIPE_BUSINESS_ANNUAL_PRICE_ID: str = ""
+    
+    # Twilio SMS Settings
+    TWILIO_ACCOUNT_SID: str = ""
+    TWILIO_AUTH_TOKEN: str = ""
+    TWILIO_PHONE_NUMBER: str = ""
+    
+    # SendGrid Email Settings
+    SENDGRID_API_KEY: str = ""
+    SENDGRID_FROM_EMAIL: str = "alerts@hawaii-emergency.com"
+    
     class Config:
         case_sensitive = True
         env_file = ".env"
