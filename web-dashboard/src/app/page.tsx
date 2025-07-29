@@ -3,11 +3,19 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { api, DashboardMetrics, Alert as AlertType, AlertTrend } from "@/lib/api"
+import { LoginForm } from "@/components/auth/login-form"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertMap } from "@/components/maps/AlertMap"
+import { AlertStatusMonitor } from "@/components/monitoring/AlertStatusMonitor"
+import { OceanConditionsWidget } from "@/components/ocean/OceanConditionsWidget"
+import { PWABanner } from "@/components/pwa/PWABanner"
+import { EmergencyChecklistWidget } from "@/components/emergency/EmergencyChecklistWidget"
+import { EvacuationRoutePlanner } from "@/components/evacuation/EvacuationRoutePlanner"
+import { WeatherRadarWidget } from "@/components/weather/WeatherRadarWidget"
 import { 
   AlertTriangle, 
   Clock, 
@@ -18,7 +26,11 @@ import {
   TrendingUp,
   TrendingDown,
   MapPin,
-  Radio
+  Radio,
+  Map,
+  Shield,
+  Route,
+  Cloud
 } from "lucide-react"
 import { 
   LineChart, 
@@ -45,12 +57,54 @@ const severityColors = {
 }
 
 export default function DashboardPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [token, setToken] = useState<string | null>(null)
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
   const [alerts, setAlerts] = useState<AlertType[]>([])
   const [trends, setTrends] = useState<AlertTrend[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [systemHealth, setSystemHealth] = useState(98)
+  const [activeTab, setActiveTab] = useState("overview")
+  const [selectedMapAlert, setSelectedMapAlert] = useState<AlertType | null>(null)
+
+  // Handle browser navigation
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      // Prevent default browser back behavior that might break state
+      if (event.state && event.state.tab) {
+        setActiveTab(event.state.tab)
+      }
+    }
+
+    // Push initial state
+    if (typeof window !== 'undefined') {
+      window.history.replaceState({ tab: activeTab }, '', window.location.href)
+      window.addEventListener('popstate', handlePopState)
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('popstate', handlePopState)
+      }
+    }
+  }, [])
+
+  // Update history when tab changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.history.pushState({ tab: activeTab }, '', window.location.href)
+    }
+  }, [activeTab])
+
+  // Check for existing token on mount
+  useEffect(() => {
+    const savedToken = localStorage.getItem("token")
+    if (savedToken) {
+      setToken(savedToken)
+      setIsAuthenticated(true)
+    }
+  }, [])
 
   // Fetch real data from API
   useEffect(() => {
@@ -88,11 +142,46 @@ export default function DashboardPage() {
     return () => clearInterval(interval)
   }, [])
 
+  const handleLoginSuccess = (newToken: string) => {
+    setToken(newToken)
+    setIsAuthenticated(true)
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem("token")
+    setToken(null)
+    setIsAuthenticated(false)
+  }
+
+  const handleNavigateToAlerts = () => {
+    setActiveTab("active")
+  }
+
+  const handleNavigateToMapLocation = (alert: AlertType) => {
+    setActiveTab("map")
+    // Store selected alert for map to focus on
+    setSelectedMapAlert(alert)
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-8 bg-gray-50">
+        <LoginForm onSuccess={handleLoginSuccess} />
+      </div>
+    )
+  }
+
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
+      {/* PWA Banner */}
+      <PWABanner />
+      
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Emergency Operations Dashboard</h2>
         <div className="flex items-center space-x-2">
+          <Button variant="outline" size="sm" onClick={handleLogout}>
+            Logout
+          </Button>
           <Button variant="outline" size="sm">
             <Download className="mr-2 h-4 w-4" />
             Export Report
@@ -121,12 +210,132 @@ export default function DashboardPage() {
         </Alert>
       )}
 
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="active">Active Alerts</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="system">System Health</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        {/* Mobile/Small Screen Navigation */}
+        <div className="block lg:hidden">
+          <div className="flex flex-wrap gap-2 p-2 bg-gray-50 rounded-lg border">
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "overview" 
+                  ? "bg-blue-600 text-white shadow-sm" 
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+              }`}
+            >
+              🏠 Home
+            </button>
+            <button
+              onClick={() => setActiveTab("map")}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "map" 
+                  ? "bg-blue-600 text-white shadow-sm" 
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+              }`}
+            >
+              🗺️ Map
+            </button>
+            <button
+              onClick={() => setActiveTab("active")}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "active" 
+                  ? "bg-red-600 text-white shadow-sm" 
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+              }`}
+            >
+              🚨 Alerts
+            </button>
+            <button
+              onClick={() => setActiveTab("evacuation")}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "evacuation" 
+                  ? "bg-orange-600 text-white shadow-sm" 
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+              }`}
+            >
+              🏃 Evac
+            </button>
+            <button
+              onClick={() => setActiveTab("weather")}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "weather" 
+                  ? "bg-blue-500 text-white shadow-sm" 
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+              }`}
+            >
+              ⛅ Weather
+            </button>
+            <button
+              onClick={() => setActiveTab("monitor")}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "monitor" 
+                  ? "bg-green-600 text-white shadow-sm" 
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+              }`}
+            >
+              📊 Monitor
+            </button>
+            <button
+              onClick={() => setActiveTab("checklist")}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "checklist" 
+                  ? "bg-purple-600 text-white shadow-sm" 
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+              }`}
+            >
+              📦 Kit
+            </button>
+            <button
+              onClick={() => setActiveTab("analytics")}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "analytics" 
+                  ? "bg-indigo-600 text-white shadow-sm" 
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+              }`}
+            >
+              📈 Analytics
+            </button>
+            <button
+              onClick={() => setActiveTab("system")}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "system" 
+                  ? "bg-gray-600 text-white shadow-sm" 
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+              }`}
+            >
+              ⚙️ System
+            </button>
+          </div>
+        </div>
+
+        {/* Desktop Navigation */}
+        <TabsList className="hidden lg:flex w-full h-auto p-2 bg-white border rounded-lg shadow-sm">
+          <TabsTrigger value="overview" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+            🏠 Overview
+          </TabsTrigger>
+          <TabsTrigger value="map" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+            🗺️ Alert Map
+          </TabsTrigger>
+          <TabsTrigger value="monitor" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+            📊 Monitoring
+          </TabsTrigger>
+          <TabsTrigger value="active" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+            🚨 Active Alerts
+          </TabsTrigger>
+          <TabsTrigger value="evacuation" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-orange-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+            🏃 Evacuation
+          </TabsTrigger>
+          <TabsTrigger value="weather" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+            ⛅ Weather
+          </TabsTrigger>
+          <TabsTrigger value="checklist" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+            📦 Emergency Kit
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+            📈 Analytics
+          </TabsTrigger>
+          <TabsTrigger value="system" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-gray-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+            ⚙️ System Health
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -322,6 +531,60 @@ export default function DashboardPage() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="map" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Map className="h-5 w-5" />
+                    Live Alert Map
+                  </CardTitle>
+                  <CardDescription>
+                    Real-time visualization of all active emergency alerts across Hawaii
+                  </CardDescription>
+                </div>
+                <Button variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Map
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <AlertMap 
+                alerts={alerts} 
+                selectedAlert={selectedMapAlert}
+                onAlertSelect={setSelectedMapAlert}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="monitor" className="space-y-4">
+          <AlertStatusMonitor onNavigateToAlerts={handleNavigateToAlerts} />
+          <OceanConditionsWidget />
+        </TabsContent>
+
+        <TabsContent value="evacuation" className="space-y-4">
+          <EvacuationRoutePlanner 
+            currentLocation={[-157.8167, 21.4667]}
+            emergencyType="general"
+          />
+        </TabsContent>
+
+        <TabsContent value="weather" className="space-y-4">
+          <WeatherRadarWidget 
+            center={[-157.8167, 21.4667]}
+            zoom={7}
+            showAnimation={true}
+            showAlerts={true}
+          />
+        </TabsContent>
+
+        <TabsContent value="checklist" className="space-y-4">
+          <EmergencyChecklistWidget />
+        </TabsContent>
+
         <TabsContent value="active" className="space-y-4">
           {/* Active alerts content */}
           <Card>
@@ -357,18 +620,31 @@ export default function DashboardPage() {
                           {alert.severity.toUpperCase()}
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center">
-                          <MapPin className="h-3 w-3 mr-1" />
-                          {alert.location_name}
-                        </span>
-                        <span className="flex items-center">
-                          <Clock className="h-3 w-3 mr-1" />
-                          Expires: {alert.time_until_expiry || 'N/A'}
-                        </span>
-                        <span>
-                          Counties: {alert.affected_counties.join(', ')}
-                        </span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <span className="flex items-center">
+                            <MapPin className="h-3 w-3 mr-1" />
+                            {alert.location_name}
+                          </span>
+                          <span className="flex items-center">
+                            <Clock className="h-3 w-3 mr-1" />
+                            Expires: {alert.time_until_expiry || 'N/A'}
+                          </span>
+                          <span>
+                            Counties: {alert.affected_counties.join(', ')}
+                          </span>
+                        </div>
+                        {alert.latitude && alert.longitude && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => handleNavigateToMapLocation(alert)}
+                            className="gap-2 text-xs bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                          >
+                            <MapPin className="h-3 w-3" />
+                            View on Map
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))

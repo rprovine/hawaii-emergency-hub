@@ -13,6 +13,9 @@ export interface Alert {
   created_at: string;
   time_until_expiry: string;
   is_active: boolean;
+  latitude?: number;
+  longitude?: number;
+  radius_miles?: number;
 }
 
 export interface DashboardMetrics {
