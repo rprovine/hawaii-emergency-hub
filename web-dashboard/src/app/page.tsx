@@ -366,44 +366,44 @@ export default function DashboardPage() {
         </div>
 
         {/* Desktop Navigation */}
-        <TabsList className="hidden lg:flex w-full h-auto p-2 bg-white border rounded-lg shadow-sm">
-          <TabsTrigger value="overview" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+        <TabsList className="hidden lg:flex w-full h-auto p-2 bg-white border rounded-lg shadow-sm flex-wrap gap-2 justify-center xl:justify-start">
+          <TabsTrigger value="overview" className="min-w-[140px] px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
             🏠 Overview
           </TabsTrigger>
-          <TabsTrigger value="map" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+          <TabsTrigger value="map" className="min-w-[140px] px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
             🗺️ Alert Map
           </TabsTrigger>
-          <TabsTrigger value="monitor" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+          <TabsTrigger value="monitor" className="min-w-[140px] px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
             📊 Monitoring
           </TabsTrigger>
-          <TabsTrigger value="active" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+          <TabsTrigger value="active" className="min-w-[140px] px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
             🚨 Active Alerts
           </TabsTrigger>
-          <TabsTrigger value="evacuation" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-orange-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+          <TabsTrigger value="evacuation" className="min-w-[140px] px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-orange-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
             🏃 Evacuation
           </TabsTrigger>
-          <TabsTrigger value="weather" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+          <TabsTrigger value="weather" className="min-w-[140px] px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
             ⛅ Weather
           </TabsTrigger>
-          <TabsTrigger value="ocean" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+          <TabsTrigger value="ocean" className="min-w-[140px] px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
             🌊 Ocean
           </TabsTrigger>
-          <TabsTrigger value="family" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-pink-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+          <TabsTrigger value="family" className="min-w-[140px] px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-pink-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
             ❤️ Family Safety
           </TabsTrigger>
-          <TabsTrigger value="checklist" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+          <TabsTrigger value="checklist" className="min-w-[140px] px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
             📦 Emergency Kit
           </TabsTrigger>
-          <TabsTrigger value="communications" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+          <TabsTrigger value="communications" className="min-w-[150px] px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
             📡 Communications
           </TabsTrigger>
-          <TabsTrigger value="community" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-amber-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+          <TabsTrigger value="community" className="min-w-[140px] px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-amber-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
             👥 Community
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+          <TabsTrigger value="analytics" className="min-w-[140px] px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
             📈 Analytics
           </TabsTrigger>
-          <TabsTrigger value="system" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-gray-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+          <TabsTrigger value="system" className="min-w-[150px] px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-gray-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
             ⚙️ System Health
           </TabsTrigger>
         </TabsList>
