@@ -500,13 +500,62 @@ export function AlertMap({
   // Handle external selected alert changes
   useEffect(() => {
     if (externalSelectedAlert && map.current) {
+      console.log('AlertMap: Received external selected alert:', {
+        id: externalSelectedAlert.id,
+        title: externalSelectedAlert.title,
+        location_name: externalSelectedAlert.location_name,
+        latitude: externalSelectedAlert.latitude,
+        longitude: externalSelectedAlert.longitude,
+        coordinates: (externalSelectedAlert as any).coordinates
+      })
+      
       setSelectedAlert(externalSelectedAlert)
+      
+      // Get coordinates from either lat/lng properties or coordinates array
+      let targetCoords: [number, number] | null = null
+      
       if (externalSelectedAlert.latitude && externalSelectedAlert.longitude) {
-        map.current.flyTo({
-          center: [externalSelectedAlert.longitude, externalSelectedAlert.latitude],
-          zoom: 12,
-          duration: 1500
-        })
+        targetCoords = [externalSelectedAlert.longitude, externalSelectedAlert.latitude]
+        console.log('AlertMap: Using latitude/longitude properties:', targetCoords)
+      } else if ((externalSelectedAlert as any).coordinates && Array.isArray((externalSelectedAlert as any).coordinates) && (externalSelectedAlert as any).coordinates.length >= 2) {
+        targetCoords = [(externalSelectedAlert as any).coordinates[0], (externalSelectedAlert as any).coordinates[1]]
+        console.log('AlertMap: Using coordinates array:', targetCoords)
+      }
+      
+      if (targetCoords) {
+        console.log('AlertMap: Flying to coordinates:', targetCoords)
+        console.log('AlertMap: Current map center before flyTo:', map.current.getCenter())
+        
+        // Ensure map is loaded before flying to location
+        if (map.current.isStyleLoaded()) {
+          console.log('AlertMap: Map style loaded, flying to coordinates')
+          map.current.flyTo({
+            center: targetCoords,
+            zoom: 12,
+            duration: 1500
+          })
+        } else {
+          console.log('AlertMap: Map style not loaded, waiting for style to load')
+          map.current.once('styledata', () => {
+            console.log('AlertMap: Style loaded, now flying to coordinates')
+            if (map.current && targetCoords) {
+              map.current.flyTo({
+                center: targetCoords,
+                zoom: 12,
+                duration: 1500
+              })
+            }
+          })
+        }
+        
+        // Log the center after flyTo is called
+        setTimeout(() => {
+          if (map.current) {
+            console.log('AlertMap: Map center after flyTo:', map.current.getCenter())
+          }
+        }, 2000)
+      } else {
+        console.log('AlertMap: No coordinates available for alert, staying at current location')
       }
     }
   }, [externalSelectedAlert])

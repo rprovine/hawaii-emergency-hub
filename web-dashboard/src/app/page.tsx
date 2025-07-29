@@ -16,6 +16,11 @@ import { PWABanner } from "@/components/pwa/PWABanner"
 import { EmergencyChecklistWidget } from "@/components/emergency/EmergencyChecklistWidget"
 import { EvacuationRoutePlanner } from "@/components/evacuation/EvacuationRoutePlanner"
 import { WeatherRadarWidget } from "@/components/weather/WeatherRadarWidget"
+import { FamilySafetyWidget } from "@/components/family/FamilySafetyWidget"
+import { CriticalAlertOverride } from "@/components/critical/CriticalAlertOverride"
+import { TsunamiWarningWidget } from "@/components/tsunami/TsunamiWarningWidget"
+import { EmergencyCommHub } from "@/components/communication/EmergencyCommHub"
+import { CommunityReporting } from "@/components/community/CommunityReporting"
 import { 
   AlertTriangle, 
   Clock, 
@@ -30,7 +35,8 @@ import {
   Map,
   Shield,
   Route,
-  Cloud
+  Cloud,
+  Heart
 } from "lucide-react"
 import { 
   LineChart, 
@@ -95,6 +101,11 @@ export default function DashboardPage() {
     if (typeof window !== 'undefined') {
       window.history.pushState({ tab: activeTab }, '', window.location.href)
     }
+    
+    // Clear selected map alert when navigating away from map tab
+    if (activeTab !== "map") {
+      setSelectedMapAlert(null)
+    }
   }, [activeTab])
 
   // Check for existing token on mount
@@ -158,9 +169,16 @@ export default function DashboardPage() {
   }
 
   const handleNavigateToMapLocation = (alert: AlertType) => {
-    setActiveTab("map")
-    // Store selected alert for map to focus on
+    console.log('Navigating to map for alert:', {
+      id: alert.id,
+      title: alert.title,
+      location_name: alert.location_name,
+      latitude: alert.latitude,
+      longitude: alert.longitude
+    })
+    // Set the selected alert first, then switch to map tab
     setSelectedMapAlert(alert)
+    setActiveTab("map")
   }
 
   if (!isAuthenticated) {
@@ -245,6 +263,16 @@ export default function DashboardPage() {
               🚨 Alerts
             </button>
             <button
+              onClick={() => setActiveTab("family")}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "family" 
+                  ? "bg-pink-600 text-white shadow-sm" 
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+              }`}
+            >
+              ❤️ Family
+            </button>
+            <button
               onClick={() => setActiveTab("evacuation")}
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeTab === "evacuation" 
@@ -265,6 +293,16 @@ export default function DashboardPage() {
               ⛅ Weather
             </button>
             <button
+              onClick={() => setActiveTab("ocean")}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "ocean" 
+                  ? "bg-cyan-600 text-white shadow-sm" 
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+              }`}
+            >
+              🌊 Ocean
+            </button>
+            <button
               onClick={() => setActiveTab("monitor")}
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeTab === "monitor" 
@@ -283,6 +321,26 @@ export default function DashboardPage() {
               }`}
             >
               📦 Kit
+            </button>
+            <button
+              onClick={() => setActiveTab("communications")}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "communications" 
+                  ? "bg-teal-600 text-white shadow-sm" 
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+              }`}
+            >
+              📡 Comms
+            </button>
+            <button
+              onClick={() => setActiveTab("community")}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "community" 
+                  ? "bg-amber-600 text-white shadow-sm" 
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+              }`}
+            >
+              👥 Reports
             </button>
             <button
               onClick={() => setActiveTab("analytics")}
@@ -327,8 +385,20 @@ export default function DashboardPage() {
           <TabsTrigger value="weather" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
             ⛅ Weather
           </TabsTrigger>
+          <TabsTrigger value="ocean" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+            🌊 Ocean
+          </TabsTrigger>
+          <TabsTrigger value="family" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-pink-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+            ❤️ Family Safety
+          </TabsTrigger>
           <TabsTrigger value="checklist" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
             📦 Emergency Kit
+          </TabsTrigger>
+          <TabsTrigger value="communications" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+            📡 Communications
+          </TabsTrigger>
+          <TabsTrigger value="community" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-amber-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+            👥 Community
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex-1 px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
             📈 Analytics
@@ -562,7 +632,8 @@ export default function DashboardPage() {
 
         <TabsContent value="monitor" className="space-y-4">
           <AlertStatusMonitor onNavigateToAlerts={handleNavigateToAlerts} />
-          <OceanConditionsWidget />
+          <TsunamiWarningWidget />
+          <CriticalAlertOverride />
         </TabsContent>
 
         <TabsContent value="evacuation" className="space-y-4">
@@ -581,8 +652,24 @@ export default function DashboardPage() {
           />
         </TabsContent>
 
+        <TabsContent value="ocean" className="space-y-4">
+          <OceanConditionsWidget />
+        </TabsContent>
+
+        <TabsContent value="family" className="space-y-4">
+          <FamilySafetyWidget />
+        </TabsContent>
+
         <TabsContent value="checklist" className="space-y-4">
           <EmergencyChecklistWidget />
+        </TabsContent>
+
+        <TabsContent value="communications" className="space-y-4">
+          <EmergencyCommHub />
+        </TabsContent>
+
+        <TabsContent value="community" className="space-y-4">
+          <CommunityReporting />
         </TabsContent>
 
         <TabsContent value="active" className="space-y-4">

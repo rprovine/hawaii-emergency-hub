@@ -35,6 +35,8 @@ if (typeof window !== 'undefined') {
 
 interface WeatherData {
   location: string
+  island: string
+  coordinates: [number, number]
   temperature: number
   humidity: number
   windSpeed: number
@@ -77,10 +79,13 @@ interface WeatherRadarWidgetProps {
   showAlerts?: boolean
 }
 
-// Sample weather data for Hawaii regions
-const HAWAII_WEATHER_STATIONS = [
+// Comprehensive weather data for all major Hawaiian cities
+const HAWAII_WEATHER_STATIONS: WeatherData[] = [
+  // OAHU
   {
     location: "Honolulu",
+    island: "Oahu",
+    coordinates: [-157.8167, 21.4667] as [number, number],
     temperature: 82,
     humidity: 68,
     windSpeed: 12,
@@ -96,7 +101,65 @@ const HAWAII_WEATHER_STATIONS = [
     ]
   },
   {
+    location: "Pearl City",
+    island: "Oahu",
+    coordinates: [-157.9753, 21.3972] as [number, number],
+    temperature: 81,
+    humidity: 70,
+    windSpeed: 10,
+    windDirection: 70,
+    pressure: 30.11,
+    visibility: 10,
+    conditions: "sunny",
+    forecast: [
+      { time: "12:00 PM", temperature: 83, conditions: "sunny", precipitation: 0, windSpeed: 9 },
+      { time: "3:00 PM", temperature: 85, conditions: "partly_cloudy", precipitation: 5, windSpeed: 12 },
+      { time: "6:00 PM", temperature: 82, conditions: "partly_cloudy", precipitation: 15, windSpeed: 14 },
+      { time: "9:00 PM", temperature: 79, conditions: "cloudy", precipitation: 25, windSpeed: 11 }
+    ]
+  },
+  {
+    location: "Kailua",
+    island: "Oahu",
+    coordinates: [-157.7394, 21.4022] as [number, number],
+    temperature: 80,
+    humidity: 72,
+    windSpeed: 15,
+    windDirection: 60,
+    pressure: 30.13,
+    visibility: 10,
+    conditions: "partly_cloudy",
+    forecast: [
+      { time: "12:00 PM", temperature: 82, conditions: "partly_cloudy", precipitation: 5, windSpeed: 16 },
+      { time: "3:00 PM", temperature: 84, conditions: "partly_cloudy", precipitation: 10, windSpeed: 18 },
+      { time: "6:00 PM", temperature: 81, conditions: "cloudy", precipitation: 20, windSpeed: 17 },
+      { time: "9:00 PM", temperature: 78, conditions: "light_rain", precipitation: 40, windSpeed: 15 }
+    ]
+  },
+  {
+    location: "Kaneohe",
+    island: "Oahu",
+    coordinates: [-157.8583, 21.4178] as [number, number],
+    temperature: 79,
+    humidity: 75,
+    windSpeed: 8,
+    windDirection: 55,
+    pressure: 30.10,
+    visibility: 9,
+    conditions: "cloudy",
+    forecast: [
+      { time: "12:00 PM", temperature: 81, conditions: "cloudy", precipitation: 20, windSpeed: 9 },
+      { time: "3:00 PM", temperature: 82, conditions: "light_rain", precipitation: 45, windSpeed: 10 },
+      { time: "6:00 PM", temperature: 80, conditions: "rain", precipitation: 65, windSpeed: 12 },
+      { time: "9:00 PM", temperature: 77, conditions: "light_rain", precipitation: 35, windSpeed: 8 }
+    ]
+  },
+  
+  // BIG ISLAND (HAWAII)
+  {
     location: "Hilo",
+    island: "Big Island",
+    coordinates: [-155.0844, 19.7297] as [number, number],
     temperature: 77,
     humidity: 85,
     windSpeed: 8,
@@ -110,6 +173,230 @@ const HAWAII_WEATHER_STATIONS = [
       { time: "6:00 PM", temperature: 76, conditions: "rain", precipitation: 40, windSpeed: 10 },
       { time: "9:00 PM", temperature: 74, conditions: "cloudy", precipitation: 20, windSpeed: 6 }
     ]
+  },
+  {
+    location: "Kona",
+    island: "Big Island",
+    coordinates: [-155.9969, 19.6390] as [number, number],
+    temperature: 85,
+    humidity: 60,
+    windSpeed: 14,
+    windDirection: 75,
+    pressure: 30.15,
+    visibility: 10,
+    conditions: "sunny",
+    forecast: [
+      { time: "12:00 PM", temperature: 87, conditions: "sunny", precipitation: 0, windSpeed: 15 },
+      { time: "3:00 PM", temperature: 89, conditions: "sunny", precipitation: 0, windSpeed: 16 },
+      { time: "6:00 PM", temperature: 86, conditions: "partly_cloudy", precipitation: 5, windSpeed: 18 },
+      { time: "9:00 PM", temperature: 83, conditions: "partly_cloudy", precipitation: 10, windSpeed: 14 }
+    ]
+  },
+  {
+    location: "Waimea",
+    island: "Big Island",
+    coordinates: [-155.6659, 20.0194] as [number, number],
+    temperature: 72,
+    humidity: 65,
+    windSpeed: 18,
+    windDirection: 50,
+    pressure: 30.20,
+    visibility: 10,
+    conditions: "partly_cloudy",
+    forecast: [
+      { time: "12:00 PM", temperature: 74, conditions: "partly_cloudy", precipitation: 10, windSpeed: 20 },
+      { time: "3:00 PM", temperature: 76, conditions: "cloudy", precipitation: 25, windSpeed: 22 },
+      { time: "6:00 PM", temperature: 73, conditions: "light_rain", precipitation: 50, windSpeed: 19 },
+      { time: "9:00 PM", temperature: 70, conditions: "cloudy", precipitation: 30, windSpeed: 16 }
+    ]
+  },
+  {
+    location: "Pahoa",
+    island: "Big Island",
+    coordinates: [-154.9469, 19.4969] as [number, number],
+    temperature: 78,
+    humidity: 80,
+    windSpeed: 12,
+    windDirection: 40,
+    pressure: 30.09,
+    visibility: 9,
+    conditions: "light_rain",
+    forecast: [
+      { time: "12:00 PM", temperature: 80, conditions: "light_rain", precipitation: 40, windSpeed: 11 },
+      { time: "3:00 PM", temperature: 81, conditions: "rain", precipitation: 70, windSpeed: 14 },
+      { time: "6:00 PM", temperature: 79, conditions: "heavy_rain", precipitation: 90, windSpeed: 16 },
+      { time: "9:00 PM", temperature: 76, conditions: "rain", precipitation: 55, windSpeed: 12 }
+    ]
+  },
+  
+  // MAUI
+  {
+    location: "Kahului",
+    island: "Maui",
+    coordinates: [-156.4669, 20.8947] as [number, number],
+    temperature: 83,
+    humidity: 65,
+    windSpeed: 16,
+    windDirection: 65,
+    pressure: 30.14,
+    visibility: 10,
+    conditions: "partly_cloudy",
+    forecast: [
+      { time: "12:00 PM", temperature: 85, conditions: "partly_cloudy", precipitation: 5, windSpeed: 18 },
+      { time: "3:00 PM", temperature: 87, conditions: "sunny", precipitation: 0, windSpeed: 20 },
+      { time: "6:00 PM", temperature: 84, conditions: "partly_cloudy", precipitation: 10, windSpeed: 17 },
+      { time: "9:00 PM", temperature: 81, conditions: "cloudy", precipitation: 20, windSpeed: 14 }
+    ]
+  },
+  {
+    location: "Lahaina",
+    island: "Maui",
+    coordinates: [-156.6825, 20.8783] as [number, number],
+    temperature: 86,
+    humidity: 58,
+    windSpeed: 12,
+    windDirection: 70,
+    pressure: 30.16,
+    visibility: 10,
+    conditions: "sunny",
+    forecast: [
+      { time: "12:00 PM", temperature: 88, conditions: "sunny", precipitation: 0, windSpeed: 13 },
+      { time: "3:00 PM", temperature: 90, conditions: "sunny", precipitation: 0, windSpeed: 15 },
+      { time: "6:00 PM", temperature: 87, conditions: "partly_cloudy", precipitation: 5, windSpeed: 14 },
+      { time: "9:00 PM", temperature: 84, conditions: "partly_cloudy", precipitation: 10, windSpeed: 11 }
+    ]
+  },
+  {
+    location: "Hana",
+    island: "Maui",
+    coordinates: [-155.9889, 20.7583] as [number, number],
+    temperature: 75,
+    humidity: 88,
+    windSpeed: 6,
+    windDirection: 35,
+    pressure: 30.06,
+    visibility: 7,
+    conditions: "rain",
+    forecast: [
+      { time: "12:00 PM", temperature: 76, conditions: "heavy_rain", precipitation: 95, windSpeed: 7 },
+      { time: "3:00 PM", temperature: 77, conditions: "rain", precipitation: 80, windSpeed: 8 },
+      { time: "6:00 PM", temperature: 75, conditions: "light_rain", precipitation: 50, windSpeed: 6 },
+      { time: "9:00 PM", temperature: 73, conditions: "cloudy", precipitation: 25, windSpeed: 5 }
+    ]
+  },
+  {
+    location: "Kihei",
+    island: "Maui",
+    coordinates: [-156.4497, 20.7647] as [number, number],
+    temperature: 84,
+    humidity: 62,
+    windSpeed: 14,
+    windDirection: 68,
+    pressure: 30.15,
+    visibility: 10,
+    conditions: "sunny",
+    forecast: [
+      { time: "12:00 PM", temperature: 86, conditions: "sunny", precipitation: 0, windSpeed: 16 },
+      { time: "3:00 PM", temperature: 88, conditions: "sunny", precipitation: 0, windSpeed: 18 },
+      { time: "6:00 PM", temperature: 85, conditions: "partly_cloudy", precipitation: 5, windSpeed: 15 },
+      { time: "9:00 PM", temperature: 82, conditions: "partly_cloudy", precipitation: 10, windSpeed: 12 }
+    ]
+  },
+  
+  // KAUAI
+  {
+    location: "Lihue",
+    island: "Kauai",
+    coordinates: [-159.3489, 21.9788] as [number, number],
+    temperature: 81,
+    humidity: 73,
+    windSpeed: 13,
+    windDirection: 60,
+    pressure: 30.12,
+    visibility: 10,
+    conditions: "partly_cloudy",
+    forecast: [
+      { time: "12:00 PM", temperature: 83, conditions: "partly_cloudy", precipitation: 15, windSpeed: 14 },
+      { time: "3:00 PM", temperature: 85, conditions: "cloudy", precipitation: 30, windSpeed: 16 },
+      { time: "6:00 PM", temperature: 82, conditions: "light_rain", precipitation: 55, windSpeed: 15 },
+      { time: "9:00 PM", temperature: 79, conditions: "light_rain", precipitation: 40, windSpeed: 12 }
+    ]
+  },
+  {
+    location: "Poipu",
+    island: "Kauai",
+    coordinates: [-159.4669, 21.8839] as [number, number],
+    temperature: 83,
+    humidity: 67,
+    windSpeed: 15,
+    windDirection: 65,
+    pressure: 30.14,
+    visibility: 10,
+    conditions: "sunny",
+    forecast: [
+      { time: "12:00 PM", temperature: 85, conditions: "sunny", precipitation: 0, windSpeed: 17 },
+      { time: "3:00 PM", temperature: 87, conditions: "partly_cloudy", precipitation: 10, windSpeed: 19 },
+      { time: "6:00 PM", temperature: 84, conditions: "partly_cloudy", precipitation: 20, windSpeed: 16 },
+      { time: "9:00 PM", temperature: 81, conditions: "cloudy", precipitation: 25, windSpeed: 13 }
+    ]
+  },
+  {
+    location: "Hanalei",
+    island: "Kauai",
+    coordinates: [-159.5003, 22.2019] as [number, number],
+    temperature: 78,
+    humidity: 82,
+    windSpeed: 9,
+    windDirection: 45,
+    pressure: 30.08,
+    visibility: 8,
+    conditions: "light_rain",
+    forecast: [
+      { time: "12:00 PM", temperature: 79, conditions: "rain", precipitation: 75, windSpeed: 10 },
+      { time: "3:00 PM", temperature: 80, conditions: "heavy_rain", precipitation: 90, windSpeed: 12 },
+      { time: "6:00 PM", temperature: 78, conditions: "rain", precipitation: 60, windSpeed: 11 },
+      { time: "9:00 PM", temperature: 76, conditions: "light_rain", precipitation: 35, windSpeed: 8 }
+    ]
+  },
+  
+  // MOLOKAI
+  {
+    location: "Kaunakakai",
+    island: "Molokai",
+    coordinates: [-157.0228, 21.0936] as [number, number],
+    temperature: 80,
+    humidity: 71,
+    windSpeed: 11,
+    windDirection: 62,
+    pressure: 30.11,
+    visibility: 10,
+    conditions: "partly_cloudy",
+    forecast: [
+      { time: "12:00 PM", temperature: 82, conditions: "partly_cloudy", precipitation: 10, windSpeed: 12 },
+      { time: "3:00 PM", temperature: 84, conditions: "cloudy", precipitation: 25, windSpeed: 14 },
+      { time: "6:00 PM", temperature: 81, conditions: "light_rain", precipitation: 45, windSpeed: 13 },
+      { time: "9:00 PM", temperature: 78, conditions: "cloudy", precipitation: 20, windSpeed: 10 }
+    ]
+  },
+  
+  // LANAI
+  {
+    location: "Lanai City",
+    island: "Lanai",
+    coordinates: [-156.9203, 20.8267] as [number, number],
+    temperature: 75,
+    humidity: 68,
+    windSpeed: 16,
+    windDirection: 58,
+    pressure: 30.18,
+    visibility: 10,
+    conditions: "partly_cloudy",
+    forecast: [
+      { time: "12:00 PM", temperature: 77, conditions: "partly_cloudy", precipitation: 5, windSpeed: 18 },
+      { time: "3:00 PM", temperature: 79, conditions: "cloudy", precipitation: 20, windSpeed: 20 },
+      { time: "6:00 PM", temperature: 76, conditions: "light_rain", precipitation: 40, windSpeed: 17 },
+      { time: "9:00 PM", temperature: 73, conditions: "cloudy", precipitation: 15, windSpeed: 14 }
+    ]
   }
 ]
 
@@ -121,7 +408,7 @@ const WEATHER_ALERTS: WeatherAlert[] = [
     severity: 'severe',
     title: 'Flash Flood Warning',
     description: 'Heavy rainfall may cause flash flooding in low-lying areas',
-    coordinates: [-155.4308, 19.5429], // Big Island
+    coordinates: [-155.4308, 19.5429] as [number, number], // Big Island
     radius: 25,
     expiresAt: 'in 4 hours'
   },
@@ -131,7 +418,7 @@ const WEATHER_ALERTS: WeatherAlert[] = [
     severity: 'moderate',
     title: 'High Wind Advisory',
     description: 'Sustained winds 25-35 mph with gusts up to 50 mph',
-    coordinates: [-157.8167, 21.4667], // Oahu
+    coordinates: [-157.8167, 21.4667] as [number, number], // Oahu
     radius: 30,
     expiresAt: 'in 6 hours'
   }
@@ -183,17 +470,20 @@ export function WeatherRadarWidget({
     })
 
     // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right')
+    if (map.current) {
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right')
+    }
 
     // Wait for map to load before adding sources and layers
-    map.current.on('load', () => {
+    if (map.current) {
+      map.current.on('load', () => {
       if (!map.current) return
 
       // Add weather station markers
       HAWAII_WEATHER_STATIONS.forEach((station, index) => {
         if (!map.current) return
 
-        const coordinates: [number, number] = index === 0 ? [-157.8167, 21.4667] : [-155.4308, 19.5429]
+        const coordinates: [number, number] = station.coordinates
         
         // Create weather station marker
         const el = document.createElement('div')
@@ -215,7 +505,8 @@ export function WeatherRadarWidget({
           closeButton: false
         }).setHTML(`
           <div class="weather-popup" style="min-width: 220px;">
-            <h3 style="font-weight: bold; margin-bottom: 8px;">${station.location}</h3>
+            <h3 style="font-weight: bold; margin-bottom: 4px;">${station.location}</h3>
+            <p style="font-size: 11px; color: #666; margin-bottom: 8px;">${station.island}</p>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
               <div>Temperature: ${station.temperature}°F</div>
               <div>Humidity: ${station.humidity}%</div>
@@ -317,12 +608,15 @@ export function WeatherRadarWidget({
         })
       }
     })
+    }
 
     // Handle map style loading errors
-    map.current.on('error', (e) => {
-      console.error('Weather radar map error:', e)
-      setError('Failed to load weather map. Please refresh the page.')
-    })
+    if (map.current) {
+      map.current.on('error', (e) => {
+        console.error('Weather radar map error:', e)
+        setError('Failed to load weather map. Please refresh the page.')
+      })
+    }
 
     return () => {
       if (map.current) {
@@ -414,6 +708,7 @@ export function WeatherRadarWidget({
                   {getCurrentConditionsIcon(station.conditions)}
                   {station.location} Weather
                 </CardTitle>
+                <CardDescription>{station.island}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -592,7 +887,7 @@ export function WeatherRadarWidget({
                 {getCurrentConditionsIcon(station.conditions)}
                 {station.location}
               </CardTitle>
-              <CardDescription>Current conditions</CardDescription>
+              <CardDescription>{station.island} • Current conditions</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">

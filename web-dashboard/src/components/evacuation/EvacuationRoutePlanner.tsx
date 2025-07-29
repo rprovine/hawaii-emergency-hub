@@ -195,7 +195,9 @@ export function EvacuationRoutePlanner({
     })
 
     // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right')
+    if (map.current) {
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right')
+    }
 
     // Add current location marker
     new mapboxgl.Marker({ color: '#3b82f6', scale: 1.2 })
