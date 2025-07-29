@@ -60,8 +60,37 @@ async def get_alerts(
         limit=limit
     )
     
+    # Convert SQLAlchemy models to Pydantic-compatible dicts
+    alert_responses = []
+    for alert in alerts:
+        alert_dict = {
+            "id": alert.id,
+            "external_id": alert.external_id,
+            "title": alert.title,
+            "description": alert.description,
+            "severity": alert.severity,
+            "category": alert.category,
+            "location_name": alert.location_name,
+            "latitude": alert.latitude,
+            "longitude": alert.longitude,
+            "radius_miles": alert.radius_miles,
+            "affected_counties": alert.affected_counties or [],
+            "effective_time": alert.effective_time,
+            "expires_time": alert.expires_time,
+            "source": alert.source,
+            "source_url": alert.source_url,
+            "translations": alert.translations or {},
+            "alert_metadata": alert.alert_metadata or {},
+            "images": alert.images or [],
+            "created_at": alert.created_at,
+            "updated_at": alert.updated_at,
+            "is_active": alert.is_active,
+            "is_test": alert.is_test
+        }
+        alert_responses.append(AlertResponse(**alert_dict))
+    
     return AlertListResponse(
-        alerts=alerts,
+        alerts=alert_responses,
         total=total,
         skip=skip,
         limit=limit

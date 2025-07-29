@@ -29,15 +29,15 @@ class AlertBase(BaseModel):
     location_name: Optional[str] = None
     latitude: Optional[float] = Field(None, ge=-90, le=90)
     longitude: Optional[float] = Field(None, ge=-180, le=180)
-    radius_miles: Optional[float] = Field(None, ge=1, le=100)
+    radius_miles: Optional[float] = Field(None, ge=1, le=300)
     affected_counties: List[str] = []
     effective_time: datetime
     expires_time: Optional[datetime] = None
     source: str
     source_url: Optional[str] = None
     translations: Optional[Dict[str, Translation]] = {}
-    metadata: Optional[Dict[str, Any]] = {}
-    images: List[str] = []
+    alert_metadata: Optional[Dict[str, Any]] = {}
+    images: Optional[List[str]] = None
 
 class AlertCreate(AlertBase):
     external_id: str

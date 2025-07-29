@@ -20,8 +20,10 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379"
     
     # CORS
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = [
+    BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
+        "http://localhost:3001", 
+        "http://localhost:3002",
         "http://localhost:19006",
         "http://localhost:8081"
     ]
@@ -58,14 +60,14 @@ class Settings(BaseSettings):
     ALERT_CACHE_TTL_SECONDS: int = 300
     
     # Hawaii-specific settings
-    HAWAII_BOUNDS = {
+    HAWAII_BOUNDS: dict = {
         "north": 22.2356,
         "south": 18.9106,
         "east": -154.8067,
         "west": -160.2471
     }
     
-    HAWAII_COUNTIES = [
+    HAWAII_COUNTIES: list = [
         "Hawaii County",
         "Maui County", 
         "Honolulu County",
@@ -73,7 +75,7 @@ class Settings(BaseSettings):
         "Kalawao County"
     ]
     
-    SUPPORTED_LANGUAGES = ["en", "haw", "ja", "ko", "tl", "zh"]
+    SUPPORTED_LANGUAGES: list = ["en", "haw", "ja", "ko", "tl", "zh"]
     
     class Config:
         case_sensitive = True

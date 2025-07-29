@@ -65,8 +65,8 @@ class Alert(Base):
     # Multi-language support
     translations = Column(JSON)  # {"haw": {"title": "", "description": ""}, ...}
     
-    # Metadata
-    metadata = Column(JSON)  # Additional data from source
+    # Additional metadata
+    alert_metadata = Column(JSON)  # Additional data from source
     images = Column(JSON)  # List of image URLs
     
     # Status
