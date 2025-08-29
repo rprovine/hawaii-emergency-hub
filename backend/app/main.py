@@ -105,15 +105,15 @@ async def health_check():
 async def database_test():
     """Test database connectivity"""
     try:
-        from app.core.database import get_database
+        from app.core.database import get_db, engine
         from sqlalchemy import text
         
-        db = next(get_database())
+        db = next(get_db())
         result = db.execute(text("SELECT 1 as test")).fetchone()
         
         # Check if tables exist
         from sqlalchemy import inspect
-        inspector = inspect(db.bind)
+        inspector = inspect(engine)
         tables = inspector.get_table_names()
         
         return {
