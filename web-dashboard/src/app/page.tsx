@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertMap } from "@/components/maps/AlertMap"
+import { SimpleAlertMap } from "@/components/maps/SimpleAlertMap"
 import { AlertStatusMonitor } from "@/components/monitoring/AlertStatusMonitor"
 import { OceanConditionsWidget } from "@/components/ocean/OceanConditionsWidget"
 import { PWABanner } from "@/components/pwa/PWABanner"
@@ -629,11 +630,7 @@ export default function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <AlertMap 
-                alerts={alerts} 
-                selectedAlert={selectedMapAlert}
-                onAlertSelect={setSelectedMapAlert}
-              />
+              <SimpleAlertMap alerts={alerts} />
             </CardContent>
           </Card>
         </TabsContent>
