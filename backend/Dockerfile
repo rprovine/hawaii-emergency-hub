@@ -25,5 +25,9 @@ USER appuser
 # Expose port
 EXPOSE 8000
 
+# Copy start script
+COPY --chown=appuser:appuser start.sh .
+RUN chmod +x start.sh
+
 # Default command (can be overridden in docker-compose)
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["./start.sh"]
