@@ -16,13 +16,21 @@ from app.core.config import settings
 
 def create_database():
     """Create database and tables"""
-    # Use SQLite for development
-    db_path = backend_dir / "hawaii_emergency.db"
-    engine = create_engine(f"sqlite:///{db_path}")
+    # Use the configured database URL (PostgreSQL in production, SQLite in dev)
+    database_url = settings.DATABASE_URL
     
-    print(f"Creating database at: {db_path}")
+    if database_url.startswith("sqlite"):
+        # Development - use SQLite
+        db_path = backend_dir / "hawaii_emergency.db" 
+        engine = create_engine(f"sqlite:///{db_path}")
+        print(f"Creating SQLite database at: {db_path}")
+    else:
+        # Production - use PostgreSQL
+        engine = create_engine(database_url)
+        print(f"Connecting to PostgreSQL database...")
+    
     Base.metadata.create_all(engine)
-    print("✅ Database created successfully!")
+    print("✅ Database tables created successfully!")
     
     # Check if we need to run migrations
     migration_file = backend_dir / "migrations" / "add_premium_features.py"
