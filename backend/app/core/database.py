@@ -6,14 +6,36 @@ import os
 
 from app.core.config import settings
 
-# Handle SQLite for local development
-if settings.DATABASE_URL.startswith("sqlite"):
+# Handle different database types
+try:
+    if settings.DATABASE_URL.startswith("sqlite"):
+        # SQLite configuration
+        engine = create_engine(
+            settings.DATABASE_URL,
+            connect_args={"check_same_thread": False}
+        )
+    else:
+        # PostgreSQL configuration
+        engine = create_engine(
+            settings.DATABASE_URL,
+            pool_pre_ping=True,
+            pool_recycle=300
+        )
+    
+    # Test connection
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        conn.execute(text("SELECT 1"))
+    print(f"✅ Database connected: {settings.DATABASE_URL[:20]}...")
+    
+except Exception as e:
+    print(f"❌ Database connection failed: {e}")
+    print("🔄 Falling back to SQLite...")
+    # Fallback to SQLite
     engine = create_engine(
-        settings.DATABASE_URL,
-        connect_args={"check_same_thread": False}  # Needed for SQLite
+        "sqlite:///./hawaii_emergency.db",
+        connect_args={"check_same_thread": False}
     )
-else:
-    engine = create_engine(settings.DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

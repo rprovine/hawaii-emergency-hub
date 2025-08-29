@@ -13,8 +13,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
-    # Database
-    DATABASE_URL: str = "postgresql://postgres:password@localhost/hawaii_emergency"
+    # Database - fallback to SQLite if PostgreSQL not available
+    DATABASE_URL: str = "sqlite:///./hawaii_emergency.db"
     
     # Redis
     REDIS_URL: str = "redis://localhost:6379"

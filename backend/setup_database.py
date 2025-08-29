@@ -32,8 +32,9 @@ def create_database():
             print(f"Connecting to PostgreSQL database...")
         
         # Test connection first
+        from sqlalchemy import text
         with engine.connect() as conn:
-            conn.execute("SELECT 1")
+            conn.execute(text("SELECT 1"))
             print("✅ Database connection successful!")
         
         # Import all models to ensure they're registered
