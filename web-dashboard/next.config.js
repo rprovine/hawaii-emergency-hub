@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['localhost', 'api.hawaii-emergency.gov'],
+    domains: ['localhost', 'api.hawaii-emergency.gov', 'hawaii-emergency-hub.onrender.com'],
   },
   async headers() {
     return [
