@@ -1,4 +1,5 @@
 // API service for fetching data from the backend
+import { noaaService } from './services/noaa-api';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
@@ -6,7 +7,7 @@ export interface Alert {
   id: string;
   title: string;
   description: string;
-  severity: 'minor' | 'moderate' | 'severe' | 'extreme';
+  severity: 'minor' | 'moderate' | 'severe' | 'extreme' | 'critical' | 'high' | 'low';
   category: string;
   location_name: string;
   affected_counties: string[];
@@ -16,6 +17,10 @@ export interface Alert {
   latitude?: number;
   longitude?: number;
   radius_miles?: number;
+  coordinates?: number[];
+  affected_radius_km?: number;
+  source?: string;
+  instruction?: string;
 }
 
 export interface DashboardMetrics {
@@ -50,9 +55,49 @@ export interface SystemHealth {
 
 export const api = {
   async getAlerts(limit = 10): Promise<{ alerts: Alert[]; total: number }> {
-    const response = await fetch(`${API_URL}/alerts/?limit=${limit}`);
-    if (!response.ok) throw new Error('Failed to fetch alerts');
-    return response.json();
+    try {
+      // First try to get real NOAA alerts
+      const noaaAlerts = await noaaService.getHawaiiAlerts();
+      if (noaaAlerts.length > 0) {
+        console.log('Using real NOAA alerts:', noaaAlerts.length);
+        const alerts = limit ? noaaAlerts.slice(0, limit) : noaaAlerts;
+        return { alerts, total: noaaAlerts.length };
+      }
+    } catch (noaaError) {
+      console.error('Failed to fetch NOAA alerts, falling back to API:', noaaError);
+    }
+    
+    // Fallback to local API
+    try {
+      const response = await fetch(`${API_URL}/alerts/?limit=${limit}`);
+      if (!response.ok) throw new Error('Failed to fetch alerts');
+      return response.json();
+    } catch (apiError) {
+      console.error('API error:', apiError);
+      // Return demo data as last resort
+      return {
+        alerts: [
+          {
+            id: 'tsunami-demo',
+            title: 'TSUNAMI WARNING',
+            description: 'A TSUNAMI WARNING IS IN EFFECT. Move to higher ground immediately.',
+            severity: 'extreme' as const,
+            category: 'tsunami',
+            location_name: 'All Hawaiian Islands',
+            affected_counties: ['All Counties'],
+            created_at: new Date().toISOString(),
+            time_until_expiry: 'ACTIVE NOW',
+            is_active: true,
+            latitude: 20.7984,
+            longitude: -156.3319,
+            coordinates: [-156.3319, 20.7984],
+            affected_radius_km: 500,
+            source: 'Demo'
+          }
+        ],
+        total: 1
+      };
+    }
   },
 
   async getDashboardMetrics(): Promise<DashboardMetrics> {

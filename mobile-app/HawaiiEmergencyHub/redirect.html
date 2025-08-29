@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Opening Hawaii Emergency Hub...</title>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #1e40af;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 400px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .button {
+            display: inline-block;
+            background: white;
+            color: #1e40af;
+            padding: 16px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 10px;
+        }
+        .loading {
+            margin: 20px 0;
+        }
+        .url {
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 20px 0;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hawaii Emergency Hub</h1>
+        <div class="loading">Redirecting to Expo Go...</div>
+        
+        <div class="url">exp://192.168.4.97:8081</div>
+        
+        <a href="exp://192.168.4.97:8081" class="button">Open in Expo Go</a>
+        
+        <p style="margin-top: 30px; font-size: 14px; opacity: 0.8;">
+            If the app doesn't open automatically:<br>
+            1. Make sure Expo Go is installed<br>
+            2. Copy the URL above<br>
+            3. Open Expo Go and look for "Enter URL" option
+        </p>
+    </div>
+    
+    <script>
+        // Try to redirect automatically
+        setTimeout(() => {
+            window.location.href = 'exp://192.168.4.97:8081';
+        }, 1000);
+    </script>
+</body>
+</html>

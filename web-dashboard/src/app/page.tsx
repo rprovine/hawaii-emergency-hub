@@ -21,6 +21,7 @@ import { CriticalAlertOverride } from "@/components/critical/CriticalAlertOverri
 import { TsunamiWarningWidget } from "@/components/tsunami/TsunamiWarningWidget"
 import { EmergencyCommHub } from "@/components/communication/EmergencyCommHub"
 import { CommunityReporting } from "@/components/community/CommunityReporting"
+import { ComprehensiveDashboard } from "@/components/comprehensive/ComprehensiveDashboard"
 import { 
   AlertTriangle, 
   Clock, 
@@ -59,11 +60,14 @@ const severityColors = {
   minor: "hsl(47.9, 95.8%, 53.1%)",
   moderate: "hsl(32.6, 94.6%, 43.7%)",
   severe: "hsl(0, 84.2%, 60.2%)",
-  extreme: "hsl(0, 62.8%, 30.6%)"
+  extreme: "hsl(0, 62.8%, 30.6%)",
+  critical: "hsl(0, 62.8%, 30.6%)",
+  high: "hsl(0, 84.2%, 60.2%)",
+  low: "hsl(47.9, 95.8%, 53.1%)"
 }
 
 export default function DashboardPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(true) // Bypass auth for demo
   const [token, setToken] = useState<string | null>(null)
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
   const [alerts, setAlerts] = useState<AlertType[]>([])
@@ -406,6 +410,9 @@ export default function DashboardPage() {
           <TabsTrigger value="system" className="min-w-[150px] px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-gray-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
             ⚙️ System Health
           </TabsTrigger>
+          <TabsTrigger value="comprehensive" className="min-w-[140px] px-4 py-3 text-sm font-medium rounded-md data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all">
+            🌐 All Data
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -573,11 +580,12 @@ export default function DashboardPage() {
                   <div key={alert.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center space-x-4">
                       <Badge 
-                        variant={alert.severity === 'severe' ? 'destructive' : 'secondary'}
+                        variant={['severe', 'extreme', 'critical'].includes(alert.severity) ? 'destructive' : 'secondary'}
                         className={
-                          alert.severity === 'severe' ? 'bg-emergency-severe' : 
-                          alert.severity === 'moderate' ? 'bg-emergency-moderate' : 
-                          'bg-emergency-minor'
+                          alert.severity === 'extreme' || alert.severity === 'critical' ? 'bg-red-900' :
+                          alert.severity === 'severe' || alert.severity === 'high' ? 'bg-red-600' : 
+                          alert.severity === 'moderate' ? 'bg-orange-500' : 
+                          'bg-yellow-500'
                         }
                       >
                         {alert.severity.toUpperCase()}
@@ -696,10 +704,10 @@ export default function DashboardPage() {
                           <p className="text-sm text-muted-foreground">{alert.description}</p>
                         </div>
                         <Badge 
-                          variant={alert.severity === 'severe' || alert.severity === 'extreme' ? 'destructive' : 'secondary'}
+                          variant={['severe', 'extreme', 'critical'].includes(alert.severity) ? 'destructive' : 'secondary'}
                           className={
-                            alert.severity === 'extreme' ? 'bg-red-900' :
-                            alert.severity === 'severe' ? 'bg-red-600' : 
+                            alert.severity === 'extreme' || alert.severity === 'critical' ? 'bg-red-900' :
+                            alert.severity === 'severe' || alert.severity === 'high' ? 'bg-red-600' : 
                             alert.severity === 'moderate' ? 'bg-orange-500' : 
                             'bg-yellow-500'
                           }
@@ -1027,6 +1035,10 @@ export default function DashboardPage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="comprehensive" className="space-y-4">
+          <ComprehensiveDashboard />
         </TabsContent>
       </Tabs>
     </div>

@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "Hawaii Emergency Hub",
+    "slug": "hawaii-emergency-hub",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "hawaiiemergencyhub",
+    "primaryColor": "#1e40af",
+    "backgroundColor": "#f8fafc",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1e40af"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hawaiiemergency.hub",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Hawaii Emergency Hub needs your location to provide local emergency alerts and evacuation routes.",
+        "NSLocationAlwaysUsageDescription": "Hawaii Emergency Hub needs your location to send critical emergency alerts even when the app is closed.",
+        "UIBackgroundModes": ["location", "fetch", "remote-notification"]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1e40af"
+      },
+      "package": "com.hawaiiemergency.hub",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "VIBRATE",
+        "RECEIVE_BOOT_COMPLETED"
+      ],
+      "edgeToEdgeEnabled": true
+    },
+    "notification": {
+      "icon": "./assets/notification-icon.png",
+      "color": "#1e40af",
+      "androidMode": "default",
+      "androidCollapsedTitle": "Hawaii Emergency Hub"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}

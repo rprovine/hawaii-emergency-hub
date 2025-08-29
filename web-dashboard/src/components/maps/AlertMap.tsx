@@ -217,7 +217,10 @@ export function AlertMap({
             'minor': 1,
             'moderate': 2,
             'severe': 3,
-            'extreme': 4
+            'extreme': 4,
+            'critical': 4,
+            'high': 3,
+            'low': 1
           }[alert.severity] || 1
 
           return {
