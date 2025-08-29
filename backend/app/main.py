@@ -14,7 +14,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-from app.api import alerts, auth, analytics, admin, notifications, zones, translations, family, history, ocean, crime
+from app.api import alerts, auth, analytics, admin, notifications, zones, translations, family, history, ocean, crime, demo_alerts
 from app.routers import payments
 from app.core.config import settings
 from app.core.websocket import connection_manager
@@ -26,6 +26,16 @@ from app.services.alert_processor import AlertProcessor
 async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting Hawaii Emergency Network Hub API...")
+    
+    # Create database tables if they don't exist
+    try:
+        from app.core.database import engine
+        from app.models.models import Base
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database tables created/verified")
+    except Exception as e:
+        logger.error(f"Database setup error: {e}")
+    
     # Initialize services
     app.state.alert_processor = AlertProcessor()
     await app.state.alert_processor.start()
@@ -66,6 +76,7 @@ app.add_middleware(
 app.add_middleware(RateLimitMiddleware)
 
 # Include routers
+app.include_router(demo_alerts.router, prefix="/api/v1/alerts", tags=["alerts"])  # Demo alerts first as fallback
 app.include_router(alerts.router, prefix="/api/v1/alerts", tags=["alerts"])
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
 app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["analytics"])

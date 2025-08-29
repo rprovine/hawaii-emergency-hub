@@ -38,14 +38,15 @@ async def get_alerts(
     - **active_only**: Only show currently active alerts
     - **latitude/longitude/radius_miles**: Filter by location
     """
-    service = AlertService(db)
-    
-    filters = AlertFilter(
-        severity=severity,
-        category=category,
-        county=county,
-        active_only=active_only
-    )
+    try:
+        service = AlertService(db)
+        
+        filters = AlertFilter(
+            severity=severity,
+            category=category,
+            county=county,
+            active_only=active_only
+        )
     
     if latitude and longitude:
         filters.location = LocationFilter(
