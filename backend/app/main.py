@@ -101,6 +101,35 @@ async def health_check():
         }
     }
 
+@app.get("/db-test")
+async def database_test():
+    """Test database connectivity"""
+    try:
+        from app.core.database import get_database
+        from sqlalchemy import text
+        
+        db = next(get_database())
+        result = db.execute(text("SELECT 1 as test")).fetchone()
+        
+        # Check if tables exist
+        from sqlalchemy import inspect
+        inspector = inspect(db.bind)
+        tables = inspector.get_table_names()
+        
+        return {
+            "status": "success",
+            "connection": "ok",
+            "test_query": result[0] if result else None,
+            "tables_count": len(tables),
+            "tables": tables[:10]  # Show first 10 tables
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "type": type(e).__name__
+        }
+
 @app.websocket("/ws/alerts/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: str):
     await connection_manager.connect(user_id, websocket)
