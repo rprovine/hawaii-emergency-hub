@@ -2,9 +2,10 @@ services:
   # Backend API Service
   - type: web
     name: hawaii-emergency-backend
-    runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
+    runtime: python
+    rootDir: backend
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -15,28 +16,17 @@ services:
       - key: ENVIRONMENT
         value: production
       - key: CORS_ORIGINS
-        value: https://hawaii-emergency-hub.vercel.app
+        value: https://web-dashboard-bg4hntyxe-rprovines-projects.vercel.app,https://hawaii-emergency-hub.vercel.app
       - key: JWT_SECRET
         generateValue: true
       - key: ADMIN_EMAIL
         value: admin@hawaii-emergency.gov
       - key: ADMIN_PASSWORD
         generateValue: true
-    healthCheckPath: /
+      - key: PYTHON_VERSION
+        value: "3.11"
     region: oregon
     plan: free
-
-  # Frontend Dashboard (Alternative to Vercel)
-  # - type: web
-  #   name: hawaii-emergency-dashboard
-  #   runtime: docker
-  #   dockerfilePath: ./web-dashboard/Dockerfile
-  #   dockerContext: ./web-dashboard
-  #   envVars:
-  #     - key: NEXT_PUBLIC_API_URL
-  #       value: https://hawaii-emergency-backend.onrender.com/api/v1
-  #   region: oregon
-  #   plan: free
 
 databases:
   - name: hawaii-emergency-db
