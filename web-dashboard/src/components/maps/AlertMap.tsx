@@ -422,7 +422,7 @@ export function AlertMap({
         // Initialize map
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
-          style: 'mapbox://styles/mapbox/dark-v11',
+          style: 'mapbox://styles/mapbox/streets-v12', // Changed to light street map
           center,
           zoom
         })
@@ -435,6 +435,37 @@ export function AlertMap({
           
           // Add fullscreen control
           map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right')
+          
+          // Add style switcher control
+          const styleControl = document.createElement('div')
+          styleControl.className = 'mapboxgl-ctrl mapboxgl-ctrl-group'
+          styleControl.style.position = 'absolute'
+          styleControl.style.top = '10px'
+          styleControl.style.left = '10px'
+          styleControl.innerHTML = `
+            <select id="map-style-select" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #ccc;">
+              <option value="mapbox://styles/mapbox/streets-v12">Streets</option>
+              <option value="mapbox://styles/mapbox/satellite-streets-v12">Satellite</option>
+              <option value="mapbox://styles/mapbox/outdoors-v12">Outdoors</option>
+              <option value="mapbox://styles/mapbox/light-v11">Light</option>
+              <option value="mapbox://styles/mapbox/dark-v11">Dark</option>
+            </select>
+          `
+          mapContainer.current?.appendChild(styleControl)
+          
+          const styleSelect = document.getElementById('map-style-select') as HTMLSelectElement
+          styleSelect?.addEventListener('change', (e) => {
+            const target = e.target as HTMLSelectElement
+            if (map.current) {
+              map.current.setStyle(target.value)
+              // Re-add markers after style change
+              setTimeout(() => {
+                if (showClustering) addClusteringLayers()
+                if (showHeatMap) addHeatMapLayer()
+                addMarkersForAlerts()
+              }, 1000)
+            }
+          })
           
           map.current.on('load', () => {
             console.log('Map loaded successfully')
