@@ -630,7 +630,11 @@ export default function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <SimpleAlertMap alerts={alerts} />
+              <AlertMap 
+                alerts={alerts} 
+                selectedAlert={selectedMapAlert}
+                onAlertSelect={setSelectedMapAlert}
+              />
             </CardContent>
           </Card>
         </TabsContent>
