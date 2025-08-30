@@ -13,6 +13,7 @@ import { AlertMap } from "@/components/maps/AlertMap"
 import { SimpleAlertMap } from "@/components/maps/SimpleAlertMap"
 import { AlertStatusMonitor } from "@/components/monitoring/AlertStatusMonitor"
 import { OceanConditionsWidget } from "@/components/ocean/OceanConditionsWidget"
+import { CrimeAlertsWidget } from "@/components/crime/CrimeAlertsWidget"
 import { PWABanner } from "@/components/pwa/PWABanner"
 import { EmergencyChecklistWidget } from "@/components/emergency/EmergencyChecklistWidget"
 import { EvacuationRoutePlanner } from "@/components/evacuation/EvacuationRoutePlanner"
@@ -306,6 +307,16 @@ export default function DashboardPage() {
               }`}
             >
               🌊 Ocean
+            </button>
+            <button
+              onClick={() => setActiveTab("crime")}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "crime" 
+                  ? "bg-purple-600 text-white shadow-sm" 
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+              }`}
+            >
+              🚔 Crime
             </button>
             <button
               onClick={() => setActiveTab("monitor")}
@@ -663,6 +674,10 @@ export default function DashboardPage() {
 
         <TabsContent value="ocean" className="space-y-4">
           <OceanConditionsWidget />
+        </TabsContent>
+
+        <TabsContent value="crime" className="space-y-4">
+          <CrimeAlertsWidget />
         </TabsContent>
 
         <TabsContent value="family" className="space-y-4">
